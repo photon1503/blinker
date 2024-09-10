@@ -173,6 +173,9 @@ def display_images(folder_path, delay=100):
     with ThreadPoolExecutor() as executor:    
         paused = False
         index = 0
+        zoom = False
+        zoom_factor = 3
+        zoom_size = 100
 
         executor.submit(preload_images, fits_files, folder_path, cache)
 
@@ -212,6 +215,29 @@ def display_images(folder_path, delay=100):
             # Convert image to pygame surface
             image_surface = pygame.surfarray.make_surface(cv2.cvtColor(image_with_progress, cv2.COLOR_BGR2RGB))
             screen.blit(image_surface, (0, 0))
+
+            # Handle zoom
+            if zoom:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                zoom_rect = pygame.Rect(mouse_x - zoom_size // 2, mouse_y - zoom_size // 2, zoom_size, zoom_size)
+                zoom_surface = pygame.Surface((zoom_size, zoom_size), pygame.SRCALPHA)
+                zoom_surface.blit(image_surface, (0, 0), zoom_rect)
+                zoom_surface = pygame.transform.scale(zoom_surface, (zoom_size * zoom_factor, zoom_size * zoom_factor))
+                
+                # Create a circular mask
+                mask = pygame.Surface((zoom_size * zoom_factor, zoom_size * zoom_factor), pygame.SRCALPHA)
+                pygame.draw.circle(mask, (255, 255, 255, 255), (zoom_size * zoom_factor // 2, zoom_size * zoom_factor // 2), zoom_size * zoom_factor // 2)
+                
+                # Apply the mask to the zoom surface
+                zoom_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+                
+                # Draw the zoomed circular area on the screen
+                screen.blit(zoom_surface, (mouse_x - zoom_size * zoom_factor // 2, mouse_y - zoom_size * zoom_factor // 2))
+                
+                # Draw the boundary
+                pygame.draw.circle(screen, (255, 0, 0), (mouse_x, mouse_y), zoom_size * zoom_factor // 2, 2)  # Red boundary with thickness 2
+
+
             pygame.display.flip()
             
             # Handle key events
@@ -249,6 +275,12 @@ def display_images(folder_path, delay=100):
                         index = (index + 1) % total_images
                     elif event.key == pygame.K_a:  # Left arrow to go back
                         index = (index - 1) % total_images
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 3:  # Right mouse button
+                        zoom = True
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 3:  # Right mouse button
+                        zoom = False
             
 
             

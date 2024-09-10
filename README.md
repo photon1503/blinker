@@ -26,12 +26,12 @@ To install this script, follow these steps:
 
 The script is called from the command line. 
 
+You can either start with the folder name parameter, or without. If you don't pass a folder, the program will ask for the FITS folder.
+
     Linux/MACOS example: python3 blinker.py path-to-fits-folder
-    Windows example:     python  blinker.py path-to-fits-folder
+    Windows example:     python  blinker.py "path-to-fits-folder"
 
 Note that you need to quote the path if it contains special characters or spaces.
-
-If you don't pass a folder, the program will ask for the FITS folder.
 
 ## Features
 
@@ -44,16 +44,15 @@ If you don't pass a folder, the program will ask for the FITS folder.
 
 The script is controlled by the keyboard.
 
- <kbd>A</kbd> Previous image. 
-
- <kbd>D</kbd> Next Image. 
-  <kbd>R</kbd> Reset, go to first image
-
- <kbd>Space</kbd> Toggle Play/Pause
-
- <kbd>P</kbd> Purge image. This will create a "BAD" subfolder and move the images to this location
- 
- <kbd>Esc</kbd> Exit script
+| Key/Action          | Description                                                                 |
+|---------------------|-----------------------------------------------------------------------------|
+| <kbd>A</kbd>        | Previous image                                                              |
+| <kbd>D</kbd>        | Next image                                                                  |
+| <kbd>R</kbd>        | Reset, go to first image                                                    |
+| <kbd>Space</kbd>    | Toggle Play/Pause                                                           |
+| <kbd>P</kbd>        | Purge image. This will create a "BAD" subfolder and move the images to this location |
+| <kbd>Right mouse button<kbd>  | Zoom                                                                        |
+| <kbd>Esc</kbd>      | Exit script                                                                 |
 
 ## **Contributing to blinker.py**
 
