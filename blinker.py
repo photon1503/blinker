@@ -7,6 +7,7 @@ from matplotlib.colors import LogNorm
 from collections import OrderedDict
 from LRUcache import *
 import sys
+from concurrent.futures import ThreadPoolExecutor
 
 
 reference_dec = None
@@ -146,62 +147,60 @@ def display_fits_as_film(folder_path, delay=100):
     
         
   # Use a ThreadPoolExecutor for read-ahead
-        
-    while True:
-        current_file = os.path.join(folder_path, fits_files[index])
+    with ThreadPoolExecutor() as executor:    
+        while True:
+            current_file = os.path.join(folder_path, fits_files[index])
 
-        isCached = True
-        # Check if the current image is in cache
-        image_data = cache.get(current_file)
-        if image_data is None:
-            isCached = False
-            # Load and process the current image if not in cache
-            image_data = read_and_stretch_fits(current_file)
-            # Store the processed image in cache
-            cache.put(current_file, image_data)
-        
-        # Overlay the filename on the image
-        filename = fits_files[index]
-        # added cached info to filename
-        # filename += f" (Cached: {isCached})"
-        image_with_overlay = overlay_filename(image_data, filename)
+            isCached = True
+            # Check if the current image is in cache
+            image_data = cache.get(current_file)
+            if image_data is None:
+                isCached = False
+                # Load and process the current image if not in cache
+                image_data = read_and_stretch_fits(current_file)
+                # Store the processed image in cache
+                filename = fits_files[index]
 
-        # Display the image with the overlay
-        cv2.imshow('FITS Film', image_with_overlay)
-        
-        # Handle key events
-        key = cv2.waitKey(delay if not paused else 0) & 0xFF
-        
-        if key == ord(' '):  # Spacebar to pause/play
-            paused = not paused
-        elif key == 27:  # ESC to exit
-            break
-        elif key == ord('r'):  # 'R' key to reset to first frame
-            index = 0
-        elif key == ord('p'):
-            # move the file to a different folder
-            # create path if it does not exist
-            if not os.path.exists(os.path.join(folder_path, "BAD")):
-                os.makedirs(os.path.join(folder_path, "BAD"))
-            os.rename(current_file, os.path.join(folder_path, "BAD",  fits_files[index]))
-            del fits_files[index]
-            if current_file in cache:
-                del cache.cache[current_file]  # Remove from cache as well
-            num_files -= 1
-            if index >= num_files:
-                index = num_files - 1
-            if num_files == 0:
+                image_with_overlay = overlay_filename(image_data, filename)
+                cache.put(current_file, image_with_overlay)
+       
+
+            # Display the image with the overlay
+            cv2.imshow('FITS Film', image_data)
+            
+            # Handle key events
+            key = cv2.waitKey(delay if not paused else 0) & 0xFF
+            
+            if key == ord(' '):  # Spacebar to pause/play
+                paused = not paused
+            elif key == 27:  # ESC to exit
                 break
-        elif key == ord('d'):  # Right arrow to go forward
-            index = (index + 1) % num_files
-        elif key == ord('a'):  # Left arrow to go back
-            index = (index - 1) % num_files
-        
+            elif key == ord('r'):  # 'R' key to reset to first frame
+                index = 0
+            elif key == ord('p'):
+                # move the file to a different folder
+                # create path if it does not exist
+                if not os.path.exists(os.path.join(folder_path, "BAD")):
+                    os.makedirs(os.path.join(folder_path, "BAD"))
+                os.rename(current_file, os.path.join(folder_path, "BAD",  fits_files[index]))
+                del fits_files[index]
+                if current_file in cache:
+                    del cache.cache[current_file]  # Remove from cache as well
+                num_files -= 1
+                if index >= num_files:
+                    index = num_files - 1
+                if num_files == 0:
+                    break
+            elif key == ord('d'):  # Right arrow to go forward
+                index = (index + 1) % num_files
+            elif key == ord('a'):  # Left arrow to go back
+                index = (index - 1) % num_files
+            
 
-        
-        if not paused and num_files > 1:
-            # Pre-fetch the next image in the background, but check the cache first
-            index=(index + 1) % num_files
+            
+            if not paused and num_files > 1:
+                # Pre-fetch the next image in the background, but check the cache first
+                index=(index + 1) % num_files
 
         
     # Clean up windows
