@@ -44,10 +44,9 @@ Note that you need to quote the path if it contains special characters or spaces
 
 The script is controlled by the keyboard.
 
- <kbd>A</kbd> Previous image. Press and hold for fast reverse
+ <kbd>A</kbd> Previous image. 
 
- <kbd>D</kbd> Next Image. Press and hold for fast forward
-
+ <kbd>D</kbd> Next Image. 
   <kbd>R</kbd> Reset, go to first image
 
  <kbd>Space</kbd> Toggle Play/Pause

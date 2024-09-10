@@ -2,13 +2,17 @@ import os
 import cv2
 import numpy as np
 from astropy.io import fits
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
-from collections import OrderedDict
 from LRUcache import *
 import sys
 from concurrent.futures import ThreadPoolExecutor
 import time
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import pygame
+
+
+
+
 
 
 reference_dec = None
@@ -168,6 +172,19 @@ def display_fits_as_film(folder_path, delay=100):
         index = 0
 
         executor.submit(preload_images, fits_files, folder_path, cache)
+
+                # Initialize pygame
+        pygame.init()
+ # Get the dimensions of the first image to set the window size
+        first_image_path = os.path.join(folder_path, fits_files[0])
+        first_image_data = read_and_stretch_fits(first_image_path)
+        height, width = first_image_data.shape[:2]
+        
+        screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption('FITS Blinker')
+        
+        clock = pygame.time.Clock()
+
         while True:
             start_time = time.time()
 
@@ -181,55 +198,69 @@ def display_fits_as_film(folder_path, delay=100):
                 image_data = image_with_overlay
             
             image_with_progress = overlay_progress_bar(image_data, index, total_images)
-          
+              # Ensure the image data has three dimensions
+            if len(image_with_progress.shape) == 2:
+                image_with_progress = np.expand_dims(image_with_progress, axis=2)
+                image_with_progress = np.repeat(image_with_progress, 3, axis=2)
+            
+            # Transpose the image to correct the rotation
+            image_with_progress = np.transpose(image_with_progress, (1, 0, 2))
 
-            # Display the image with the overlay
-            cv2.imshow('FITS Film', image_with_progress)
+            # Convert image to pygame surface
+            image_surface = pygame.surfarray.make_surface(cv2.cvtColor(image_with_progress, cv2.COLOR_BGR2RGB))
+            screen.blit(image_surface, (0, 0))
+            pygame.display.flip()
             
             # Handle key events
-            key = cv2.waitKey(5) & 0xFF
+            #key = cv2.waitKey(5) & 0xFF
             
-            if key == ord(' '):  # Spacebar to pause/play
-                paused = not paused
-            elif key == 27:  # ESC to exit
-                break
-            elif key == ord('r'):  # 'R' key to reset to first frame
-                index = 0
-            elif key == ord('p'):
-                # move the file to a different folder
-                # create path if it does not exist
-                if not os.path.exists(os.path.join(folder_path, "BAD")):
-                    os.makedirs(os.path.join(folder_path, "BAD"))
-                os.rename(current_file, os.path.join(folder_path, "BAD",  fits_files[index]))
-                del fits_files[index]
-                if current_file in cache:
-                    del cache.cache[current_file]  # Remove from cache as well
-                total_images -= 1
-                if index >= total_images:
-                    index = total_images - 1
-                if total_images == 0:
-                    break
-            elif key == ord('d'):  # Right arrow to go forward
-                index = (index + 1) % total_images
-            elif key == ord('a'):  # Left arrow to go back
-                index = (index - 1) % total_images
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:  # Spacebar to pause/play
+                        paused = not paused
+                    elif event.key == pygame.K_ESCAPE:  # ESC to exit
+                        pygame.quit()
+                        return
+                    elif event.key == pygame.K_r:  # 'R' key to reset to first frame
+                        index = 0
+                    elif event.key == pygame.K_p:
+                        # move the file to a different folder
+                        # create path if it does not exist
+                        if not os.path.exists(os.path.join(folder_path, "BAD")):
+                            os.makedirs(os.path.join(folder_path, "BAD"))
+                        os.rename(current_file, os.path.join(folder_path, "BAD",  fits_files[index]))
+                        del fits_files[index]
+                        if current_file in cache:
+                            del cache.cache[current_file]  # Remove from cache as well
+                        total_images -= 1
+                        if index >= total_images:
+                            index = total_images - 1
+                        if total_images == 0:
+                            pygame.quit()
+                            return
+                    elif event.key == pygame.K_d:  # Right arrow to go forward
+                        index = (index + 1) % total_images
+                    elif event.key == pygame.K_a:  # Left arrow to go back
+                        index = (index - 1) % total_images
             
 
             
             if not paused and total_images > 1:
-                # Pre-fetch the next image in the background, but check the cache first
                 index=(index + 1) % total_images
 
             elapsed_time = time.time() - start_time
             # Adjust the delay to maintain a consistent frame rate
             time_to_wait = max(1, int(delay - elapsed_time * 1000))
-            time.sleep(time_to_wait/1000)
-            #cv2.waitKey(time_to_wait)
+            clock.tick(1000 // time_to_wait)
 
 
         
     # Clean up windows
-    cv2.destroyAllWindows()
+    pygame.quit()
 
 def overlay_filename(image_data, filename):
 
