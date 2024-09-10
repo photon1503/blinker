@@ -48,6 +48,8 @@ The script is controlled by the keyboard.
 
  <kbd>D</kbd> Next Image. Press and hold for fast forward
 
+  <kbd>R</kbd> Reset, go to first image
+
  <kbd>Space</kbd> Toggle Play/Pause
 
  <kbd>P</kbd> Purge image. This will create a "BAD" subfolder and move the images to this location

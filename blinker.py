@@ -150,9 +150,11 @@ def display_fits_as_film(folder_path, delay=100):
     while True:
         current_file = os.path.join(folder_path, fits_files[index])
 
+        isCached = True
         # Check if the current image is in cache
         image_data = cache.get(current_file)
         if image_data is None:
+            isCached = False
             # Load and process the current image if not in cache
             image_data = read_and_stretch_fits(current_file)
             # Store the processed image in cache
@@ -160,10 +162,10 @@ def display_fits_as_film(folder_path, delay=100):
         
         # Overlay the filename on the image
         filename = fits_files[index]
+        # added cached info to filename
+        # filename += f" (Cached: {isCached})"
         image_with_overlay = overlay_filename(image_data, filename)
 
-
-        
         # Display the image with the overlay
         cv2.imshow('FITS Film', image_with_overlay)
         
@@ -174,7 +176,7 @@ def display_fits_as_film(folder_path, delay=100):
             paused = not paused
         elif key == 27:  # ESC to exit
             break
-        elif key == 82 or key == ord('r'):  # 'R' key to reset to first frame
+        elif key == ord('r'):  # 'R' key to reset to first frame
             index = 0
         elif key == ord('p'):
             # move the file to a different folder
@@ -220,5 +222,5 @@ def overlay_filename(image_data, filename):
 if __name__ == "__main__":
     # get folder from argument
     folder_path = sys.argv[1]
-    display_fits_as_film(folder_path, delay=20)  # Adjust delay as needed
+    display_fits_as_film(folder_path, delay=1)  # Adjust delay as needed
 
