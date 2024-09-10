@@ -22,7 +22,6 @@ To install this script, follow these steps:
     `pip install -r requirements.txt`
 
 
-
 ## **Running the Script**
 
 The script is called from the command line. There are three calling methods:
@@ -38,7 +37,7 @@ Note that you need to quote the path if it contains special characters or spaces
 1. The script will load all FITS files from the folders and put them in a (maximum) 16GB RAM cache. The cache is big enought to hold thousends of full-frame FITS files.
 2. When all images are loaded, they will play at approx 25 frames per second
 3. Each image will be stretched using sigma deviations
-4. Use the keyboard commands below the naviagate and to remove the bad frames
+4. Use the keyboard commands below to naviagate in order to find and remove the bad frames
 
 ## Usage
 
