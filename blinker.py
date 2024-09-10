@@ -8,6 +8,7 @@ from collections import OrderedDict
 from LRUcache import *
 import sys
 from concurrent.futures import ThreadPoolExecutor
+import time
 
 
 reference_dec = None
@@ -168,9 +169,11 @@ def display_fits_as_film(folder_path, delay=100):
 
         executor.submit(preload_images, fits_files, folder_path, cache)
         while True:
-            current_file = os.path.join(folder_path, fits_files[index])
+            start_time = time.time()
 
+            current_file = os.path.join(folder_path, fits_files[index])
             image_data = cache.get(current_file)
+
             if image_data is None:
                 image_data = read_and_stretch_fits(current_file)
                 image_with_overlay = overlay_filename(image_data, fits_files[index])
@@ -184,7 +187,7 @@ def display_fits_as_film(folder_path, delay=100):
             cv2.imshow('FITS Film', image_with_progress)
             
             # Handle key events
-            key = cv2.waitKey(delay if not paused else 0) & 0xFF
+            key = cv2.waitKey(5) & 0xFF
             
             if key == ord(' '):  # Spacebar to pause/play
                 paused = not paused
@@ -216,6 +219,13 @@ def display_fits_as_film(folder_path, delay=100):
             if not paused and total_images > 1:
                 # Pre-fetch the next image in the background, but check the cache first
                 index=(index + 1) % total_images
+
+            elapsed_time = time.time() - start_time
+            # Adjust the delay to maintain a consistent frame rate
+            time_to_wait = max(1, int(delay - elapsed_time * 1000))
+            time.sleep(time_to_wait/1000)
+            #cv2.waitKey(time_to_wait)
+
 
         
     # Clean up windows
