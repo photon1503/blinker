@@ -44,11 +44,15 @@ Note that you need to quote the path if it contains special characters or spaces
 
 The script is controlled by the keyboard.
 
-<kbd>A</kbd> Previous image. Press and hold for fast reverse
-<kbd>D</kbd> Next Image. Press and hold for fast forward
-<kbd>Space</kbd> Toggle Play/Pause
-<kbd>P</kbd> Purge image. This will create a "BAD" subfolder and move the images to thislocation
-<kbd>Esc</kbd> Exit script
+ <kbd>A</kbd> Previous image. Press and hold for fast reverse
+
+ <kbd>D</kbd> Next Image. Press and hold for fast forward
+
+ <kbd>Space</kbd> Toggle Play/Pause
+
+ <kbd>P</kbd> Purge image. This will create a "BAD" subfolder and move the images to this location
+ 
+ <kbd>Esc</kbd> Exit script
 
 ## **Contributing to blinker.py**
 
