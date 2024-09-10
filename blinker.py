@@ -4,7 +4,6 @@ import numpy as np
 from astropy.io import fits
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-import concurrent.futures
 from collections import OrderedDict
 from LRUcache import *
 import sys
@@ -122,12 +121,6 @@ def fix_image_orientation_with_header(image_data, header):
             rotated_data = cv2.rotate(image_data, cv2.ROTATE_180)
     else:
         rotated_data = image_data
-
-    
-    
-
-
-    
     
     return rotated_data
 
@@ -227,5 +220,5 @@ def overlay_filename(image_data, filename):
 if __name__ == "__main__":
     # get folder from argument
     folder_path = sys.argv[1]
-    display_fits_as_film(folder_path, delay=1)  # Adjust delay as needed
+    display_fits_as_film(folder_path, delay=20)  # Adjust delay as needed
 
