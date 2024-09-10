@@ -5,6 +5,10 @@
 This python script will load and display all FITS images in a given folder. The main purpopse is to find bad images which shall be removed.
 
 
+
+https://github.com/user-attachments/assets/ba8182a5-6fc5-4958-92e0-c0de354ebdf7
+
+
 ## **Pre-requisites**
 
 Before using this script, ensure you have Python 3.x installed. [Python Installation Instructions](https://python.land/installing-python).   
