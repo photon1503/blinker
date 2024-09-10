@@ -31,6 +31,8 @@ The script is called from the command line.
 
 Note that you need to quote the path if it contains special characters or spaces.
 
+If you don't pass a folder, the program will ask for the FITS folder.
+
 ## Features
 
 1. The script will load all FITS files from the folders and put them in a (maximum) 16GB RAM cache. The cache is big enought to hold thousends of full-frame FITS files.
