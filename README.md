@@ -5,7 +5,6 @@
 This python script will load and display all FITS images in a given folder. The main purpopse is to find bad images which shall be removed.
 
 
-
 ## **Pre-requisites**
 
 Before using this script, ensure you have Python 3.x installed. [Python Installation Instructions](https://python.land/installing-python).   
@@ -16,8 +15,7 @@ To install this script, follow these steps:
 
 1. Create a directory to hold the script and associated files
 
-2. Clone or download the repository from my [GitHub repository](https://github.com/TBD)
-
+2. Clone or download the repository from my [GitHub repository](https://github.com/photon1503/blinker)
 
 3. To install the required python libraries, navigate to the new directory and run the following command:   
 
