@@ -125,6 +125,22 @@ def fix_image_orientation_with_header(image_data, header):
     
     return rotated_data
 
+def overlay_progress_bar(image_data, current_index, total_images):
+    overlay = image_data.copy()
+    bar_width = int((current_index / total_images) * overlay.shape[1])
+    cv2.rectangle(overlay, (0, overlay.shape[0] - 20), (bar_width, overlay.shape[0]), (255, 255, 255), -1)
+    cv2.putText(overlay, f'{current_index + 1}/{total_images}', (10, overlay.shape[0] - 5), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+    return overlay
+
+def preload_images(fits_files, folder_path, cache):
+    for fits_file in fits_files:
+        current_file = os.path.join(folder_path, fits_file)
+        if cache.get(current_file) is None:
+            image_data = read_and_stretch_fits(current_file)
+            image_with_overlay = overlay_filename(image_data, fits_file)
+            cache.put(current_file, image_with_overlay)
+
 def display_fits_as_film(folder_path, delay=100):
     # Get a list of FITS files in the folder
     fits_files = [f for f in os.listdir(folder_path) if f.endswith('.fits')]
@@ -137,9 +153,8 @@ def display_fits_as_film(folder_path, delay=100):
     fits_files.sort()
 
     # Set up control variables
-    paused = False
-    index = 0
-    num_files = len(fits_files)
+
+    total_images = len(fits_files)
     
         # Set up the LRU cache with a 16 GB limit
     max_cache_size = 16 * 1024 * 1024 * 1024  # 16 GB
@@ -148,25 +163,25 @@ def display_fits_as_film(folder_path, delay=100):
         
   # Use a ThreadPoolExecutor for read-ahead
     with ThreadPoolExecutor() as executor:    
+        paused = False
+        index = 0
+
+        executor.submit(preload_images, fits_files, folder_path, cache)
         while True:
             current_file = os.path.join(folder_path, fits_files[index])
 
-            isCached = True
-            # Check if the current image is in cache
             image_data = cache.get(current_file)
             if image_data is None:
-                isCached = False
-                # Load and process the current image if not in cache
                 image_data = read_and_stretch_fits(current_file)
-                # Store the processed image in cache
-                filename = fits_files[index]
-
-                image_with_overlay = overlay_filename(image_data, filename)
+                image_with_overlay = overlay_filename(image_data, fits_files[index])
                 cache.put(current_file, image_with_overlay)
-       
+                image_data = image_with_overlay
+            
+            image_with_progress = overlay_progress_bar(image_data, index, total_images)
+          
 
             # Display the image with the overlay
-            cv2.imshow('FITS Film', image_data)
+            cv2.imshow('FITS Film', image_with_progress)
             
             # Handle key events
             key = cv2.waitKey(delay if not paused else 0) & 0xFF
@@ -186,21 +201,21 @@ def display_fits_as_film(folder_path, delay=100):
                 del fits_files[index]
                 if current_file in cache:
                     del cache.cache[current_file]  # Remove from cache as well
-                num_files -= 1
-                if index >= num_files:
-                    index = num_files - 1
-                if num_files == 0:
+                total_images -= 1
+                if index >= total_images:
+                    index = total_images - 1
+                if total_images == 0:
                     break
             elif key == ord('d'):  # Right arrow to go forward
-                index = (index + 1) % num_files
+                index = (index + 1) % total_images
             elif key == ord('a'):  # Left arrow to go back
-                index = (index - 1) % num_files
+                index = (index - 1) % total_images
             
 
             
-            if not paused and num_files > 1:
+            if not paused and total_images > 1:
                 # Pre-fetch the next image in the background, but check the cache first
-                index=(index + 1) % num_files
+                index=(index + 1) % total_images
 
         
     # Clean up windows
@@ -221,5 +236,5 @@ def overlay_filename(image_data, filename):
 if __name__ == "__main__":
     # get folder from argument
     folder_path = sys.argv[1]
-    display_fits_as_film(folder_path, delay=1)  # Adjust delay as needed
+    display_fits_as_film(folder_path, delay=10)  # Adjust delay as needed
 
