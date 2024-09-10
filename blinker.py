@@ -9,7 +9,8 @@ import time
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
-
+import tkinter as tk
+from tkinter import filedialog
 
 
 
@@ -277,7 +278,16 @@ def overlay_filename(image_data, filename):
 
 
 if __name__ == "__main__":
-    # get folder from argument
-    folder_path = sys.argv[1]
-    display_images(folder_path, delay=10)  # Adjust delay as needed
+    folderpath=None
+    if len(sys.argv) > 1:
+        folderpath = sys.argv[1]
+    else:
+        root = tk.Tk()
+        root.withdraw()  # Hide the root window
+        folderpath = filedialog.askdirectory(title="Select Folder Containing FITS Files")
+        
+    if folderpath:
+        display_images(folderpath, delay=10)  # Adjust delay as needed
+    else:
+        print("No folder selected.")
 

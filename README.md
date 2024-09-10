@@ -24,8 +24,7 @@ To install this script, follow these steps:
 
 ## **Running the Script**
 
-The script is called from the command line. There are three calling methods:
-
+The script is called from the command line. 
 
     Linux/MACOS example: python3 blinker.py path-to-fits-folder
     Windows example:     python  blinker.py path-to-fits-folder
