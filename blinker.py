@@ -46,7 +46,7 @@ def stf_sigma_stretch(image_data, sigma=2.8, clip=True):
     
     return stretched_data.astype(np.uint8)
 
-def shift_image_based_on_dec_ra(image_data, header):
+def shift_image(image_data, header):
     global reference_dec, reference_ra
     
     # Extract DEC and RA from header
@@ -92,7 +92,7 @@ def shift_image_based_on_dec_ra(image_data, header):
     
     return shifted_data
 
-def read_and_stretch_fits(file_path, sigma=2.0):
+def read_and_stretch(file_path, sigma=2.0):
     # Read FITS file
     with fits.open(file_path) as hdul:
         image_data = hdul[0].data
@@ -105,14 +105,14 @@ def read_and_stretch_fits(file_path, sigma=2.0):
     stretched_data = stf_sigma_stretch(image_data, sigma=sigma)
     
      # Fix orientation based on header
-    oriented_data = fix_image_orientation_with_header(stretched_data, header)
+    oriented_data = rotate(stretched_data, header)
     
     #shifted_data = shift_image_based_on_dec_ra(oriented_data, header)
     
     return oriented_data
 
 
-def fix_image_orientation_with_header(image_data, header):
+def rotate(image_data, header):
     """
     Rotate the image based on the orientation information in the FITS header.
     
@@ -142,13 +142,15 @@ def preload_images(fits_files, folder_path, cache):
     for fits_file in fits_files:
         current_file = os.path.join(folder_path, fits_file)
         if cache.get(current_file) is None:
-            image_data = read_and_stretch_fits(current_file)
+            image_data = read_and_stretch(current_file)
             image_with_overlay = overlay_filename(image_data, fits_file)
             cache.put(current_file, image_with_overlay)
 
-def display_fits_as_film(folder_path, delay=100):
+def display_images(folder_path, delay=100):
     # Get a list of FITS files in the folder
-    fits_files = [f for f in os.listdir(folder_path) if f.endswith('.fits')]
+
+    #get all fits or fts or fit
+    fits_files = [f for f in os.listdir(folder_path) if f.endswith('.fits') or f.endswith('.fts') or f.endswith('.fit')]
     
     if not fits_files:
         print("No FITS files found in the folder.")
@@ -177,7 +179,7 @@ def display_fits_as_film(folder_path, delay=100):
         pygame.init()
  # Get the dimensions of the first image to set the window size
         first_image_path = os.path.join(folder_path, fits_files[0])
-        first_image_data = read_and_stretch_fits(first_image_path)
+        first_image_data = read_and_stretch(first_image_path)
         height, width = first_image_data.shape[:2]
         
         screen = pygame.display.set_mode((width, height))
@@ -192,7 +194,7 @@ def display_fits_as_film(folder_path, delay=100):
             image_data = cache.get(current_file)
 
             if image_data is None:
-                image_data = read_and_stretch_fits(current_file)
+                image_data = read_and_stretch(current_file)
                 image_with_overlay = overlay_filename(image_data, fits_files[index])
                 cache.put(current_file, image_with_overlay)
                 image_data = image_with_overlay
@@ -277,5 +279,5 @@ def overlay_filename(image_data, filename):
 if __name__ == "__main__":
     # get folder from argument
     folder_path = sys.argv[1]
-    display_fits_as_film(folder_path, delay=10)  # Adjust delay as needed
+    display_images(folder_path, delay=10)  # Adjust delay as needed
 
