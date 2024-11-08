@@ -33,7 +33,7 @@ def stf_sigma_stretch(image_data, sigma=2.8, clip=True):
     std = np.std(image_data)
     
     # Define the lower and upper bounds for the stretch
-    lower_bound = mean - 0.8 * std
+    lower_bound = mean - 0.3 * std
     upper_bound = mean + sigma * std
     
     # Apply the stretch
@@ -99,6 +99,9 @@ def read_and_stretch(file_path, sigma=2.0):
         image_data = hdul[0].data
         header = hdul[0].header  # Get the FITS header
     
+    # remove hot pixels
+    image_data = cv2.medianBlur(image_data, 3)
+
     # resize to HD
     image_data = cv2.resize(image_data, (1920, 1080))
 
