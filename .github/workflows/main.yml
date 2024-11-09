@@ -10,8 +10,7 @@ jobs:
       - name: PyInstaller Action
         uses: Martin005/pyinstaller-action@v1.2.0
         with:
-          python_ver: '3.10'
-          spec: 'src/build.spec'
+          python_ver: '3.10'          
           requirements: 'requirements.txt'
           upload_exe_with_name: 'blinker'
           options: --onefile, --name "Blinker", --windowed, 
