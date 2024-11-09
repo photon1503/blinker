@@ -5,29 +5,7 @@ on:
     branches:
       - master
 
-jobs:
-  createrelease:
-    name: Create Release
-    runs-on: [ubuntu-latest]
-    steps:
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-    - name: Output Release URL File
-      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-    - name: Save Release URL File for publish
-      uses: actions/upload-artifact@v1
-      with:
-        name: release_url
-        path: release_url.txt
-        
+jobs:       
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -85,20 +63,30 @@ jobs:
 
     - name: List files in dist folder
       run: ls -R ./dist/
-      
-    - name: Get Release File Name & Upload URL
-      id: get_release_info
-      shell: bash
-      run: |
-        value=`cat release_url/release_url.txt`
-        echo ::set-output name=upload_url::$value        
-    - name: Upload Release Asset
-      id: upload-release-asset
+
+    - name: create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tage_name: ${{ github.event.head_commit.message }}
+        release_name: ${{ github.event.head_commit.message }}
+        overwrite: true
+        body: |
+          Test Release v1
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release
+      id: upload-release-latest
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-        asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
-        asset_name: ${{ matrix.OUT_FILE_NAME}}
-        asset_content_type: ${{ matrix.ASSET_MIME}}
+        upload_url: ${{steps.create_release.outputs.upload_url}}
+        asset_path: dist/windows-executables
+        asset_name: blinker-Windows.exe
+        asset_content_type: application/zip
+      
+  
