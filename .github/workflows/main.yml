@@ -64,6 +64,16 @@ jobs:
     - name: List files in dist folder
       run: ls -R ./dist/
 
+    # New steps to zip the dist directory
+    - name: Zip dist folder (Windows)
+      if: matrix.os == 'windows-latest'
+      run: Compress-Archive -Path dist/* -DestinationPath windows-executables.zip
+      shell: pwsh
+
+    - name: Zip dist folder (Unix-like)
+      if: matrix.os != 'windows-latest'
+      run: zip -r ${{ matrix.os }}-executables.zip dist/*
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1.1.0
@@ -82,8 +92,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist
-        asset_name: windows-executables
+        asset_path: ./windows-executables.zip
+        asset_name: windows-executables.zip
         asset_content_type: application/zip
 
     - name: Upload Release Asset (Linux)
@@ -93,8 +103,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist
-        asset_name: linux-executables
+        asset_path: ./ubuntu-latest-executables.zip
+        asset_name: linux-executables.zip
         asset_content_type: application/zip
 
     - name: Upload Release Asset (macOS)
@@ -104,6 +114,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist
-        asset_name: macos-executables
+        asset_path: ./macos-latest-executables.zip
+        asset_name: macos-executables.zip
         asset_content_type: application/zip
