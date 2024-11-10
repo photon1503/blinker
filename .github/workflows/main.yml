@@ -64,26 +64,48 @@ jobs:
     - name: List files in dist folder
       run: ls -R ./dist/
 
-    - name: create release
+    - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: actions/create-release@v1.1.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.event.head_commit.message }}
-        release_name: ${{ github.event.head_commit.message }}
+        tag_name: ${{ github.sha }}
+        release_name: Release ${{ github.sha }}
         draft: false
         prerelease: false
         
-    - name: Upload Release
-      id: upload-release-latest
-      uses: actions/upload-release-asset@v1
+    - name: Upload Release Asset (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{steps.create_release.outputs.upload_url}}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: dist/windows-executables
         asset_name: blinker-Windows.exe
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/linux-executables
+        asset_name: blinker-Linux
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/macos-executables
+        asset_name: blinker-macOS
         asset_content_type: application/zip
       
   
