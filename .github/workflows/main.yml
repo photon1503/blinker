@@ -14,7 +14,7 @@ jobs:
         os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
 
     env:
-      MAIN_PY_FILE: 'blinker.py'  # Dsefine the path to your main.py file here
+      MAIN_PY_FILE: 'blinker.py'  # Define the path to your main.py file here
 
     steps:
     - name: Checkout code
@@ -107,5 +107,3 @@ jobs:
         asset_path: dist/macos-executables
         asset_name: blinker-macOS
         asset_content_type: application/zip
-      
-  
